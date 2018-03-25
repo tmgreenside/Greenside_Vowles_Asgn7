@@ -31,6 +31,20 @@ void Interpreter::visit(ASTComplexBoolExpression& complexBoolExpr) {
     // TODO: figure out what comparison to make, do that comparison,
     // and store the result in myResult.
     
+    // Trevor edit
+    if (lhsType != currentType) {
+        throw InterpreterException("Incompatible types");
+    }
+    
+    switch (currentType) {
+        case MPLType::INT:
+        case MPLType::STRING:
+        case MPLType::BOOL:
+        default:
+            break;
+    }
+    // end Trevor edit
+    
     if (complexBoolExpr.hasConjunction) {
         complexBoolExpr.remainder->accept(*this);
         if (complexBoolExpr.conjunction == Token::AND) {
@@ -64,7 +78,13 @@ void Interpreter::visit(ASTBasicIf& basicIf) {
 }
 
 void Interpreter::visit(ASTIfStatement& ifStatement) {
-    // TODO
+    // TODO completed Trevor 3-25 at 12:49pm
+    ifStatement.baseIf.expression->accept(*this);
+    ifStatement.baseIf.statementList->accept(*this);
+    for (int i = 0; i < ifStatement.elseifs.size(); i++) {
+        ifStatement.elseifs[i].accept(*this);
+    }
+    ifStatement.elseList->accept(*this);
 }
 
 void Interpreter::visit(ASTWhileStatement& whileStatement) {
@@ -77,6 +97,7 @@ void Interpreter::visit(ASTWhileStatement& whileStatement) {
 
 void Interpreter::visit(ASTPrintStatement& printStatement) {
     // TODO
+    
 }
 
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
