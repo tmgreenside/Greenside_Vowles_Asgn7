@@ -97,15 +97,53 @@ void Interpreter::visit(ASTWhileStatement& whileStatement) {
 
 void Interpreter::visit(ASTPrintStatement& printStatement) {
     // TODO
-    
+    printStatement.expression->accept(*this);
 }
 
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
-    // TODO
+    // TODO FIX to take actual values!!!!!!!!!!!!!!!!
+    
+    if (!table.doesSymbolExist(assignmentStatement.identifier->name)) {
+        // create new identifier, push
+        assignmentStatement.rhs->accept(*this);
+        switch (currentType) {
+            case MPLType::INT:
+                table.storeIntVal(assignmentStatement.identifier->name, currentInt);
+                break;
+            case MPLType::BOOL:
+                table.storeBoolVal(assignmentStatement.identifier->name, currentBool);
+                break;
+            case MPLType::STRING:
+                table.storeStringVal(assignmentStatement.identifier->name, currentString);
+                break;
+            case MPLType::ARRAY:
+                // !!!!!!!!!!!!!!!!!!!!!!!! How to get current vector value to pass in?
+                table.storeVector(assignmentStatement.identifier->name, vector<Symbol>());
+                break;
+            default:
+                throw InterpreterException("Invalid type");
+                break;
+        }
+    }
+    assignmentStatement.identifier->accept(*this);
+    MPLType firstType = currentType;
+    assignmentStatement.rhs->accept(*this);
+    if (firstType != currentType) {
+        throw InterpreterException("Invalid type: identifier must be set to value of same type");
+    }
+    
 }
 
 void Interpreter::visit(ASTIdentifier& identifier) {
     // TODO
+    if (table.doesSymbolExist(identifier.name)) {
+        currentType = table.getSymbolType(identifier.name);
+    } else {
+        throw InterpreterException("Identifier " + identifier.name + " used before defined");
+    }
+    if (identifier.indexExpression && currentType != MPLType::ARRAY) {
+        throw InterpreterException("Identifier " + identifier.name + " given an index when not an array");
+    }
 }
 
 void Interpreter::visit(ASTLiteral& literal) {
