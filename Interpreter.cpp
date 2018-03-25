@@ -27,15 +27,21 @@ void Interpreter::visit(ASTComplexBoolExpression& complexBoolExpr) {
     auto lhsBool = currentBool;
     complexBoolExpr.second->accept(*this);
     bool myResult;
-    
+
     // TODO: figure out what comparison to make, do that comparison,
     // and store the result in myResult.
-    
-    // Trevor edit
-    if (lhsType != currentType) {
-        throw InterpreterException("Incompatible types");
+
+    if(lhsType != currType){
+        myResult = false;
+
+        throw InterpreterException("Second and First Types not matching");
+
     }
-    
+    else{
+        myResult = true;
+    }
+
+
     switch (currentType) {
         case MPLType::INT:
         case MPLType::STRING:
@@ -43,8 +49,24 @@ void Interpreter::visit(ASTComplexBoolExpression& complexBoolExpr) {
         default:
             break;
     }
-    // end Trevor edit
-    
+
+    //need this?- from typechecker
+    /*
+    switch (complexBoolExpr.relation) {
+        case Token::GREATER_THAN:
+        case Token::GREATER_THAN_EQUAL:
+        case Token::LESS_THAN:
+        case Token::LESS_THAN_EQUAL:
+            if (currentType != MPLType::INT and currentType != MPLType::STRING)
+                throw TypecheckerException("Operator valid only on integer");
+        case Token::EQUAL:
+        case Token::NOT_EQUAL:
+            break;
+        default:
+            throw TypecheckerException("Invalid operator");
+            break;
+    }*/
+
     if (complexBoolExpr.hasConjunction) {
         complexBoolExpr.remainder->accept(*this);
         if (complexBoolExpr.conjunction == Token::AND) {
@@ -74,6 +96,7 @@ void Interpreter::visit(ASTBasicIf& basicIf) {
     // visit(ASTIfStatement) explicitly look inside the various baseIfs.
     // This is because once you enter a certain if statementList, you will
     // not want to enter any other statementLists.
+
     abort();
 }
 
@@ -101,8 +124,9 @@ void Interpreter::visit(ASTPrintStatement& printStatement) {
 }
 
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
-    // TODO FIX to take actual values!!!!!!!!!!!!!!!!
-    
+    // TODO
+
+
     if (!table.doesSymbolExist(assignmentStatement.identifier->name)) {
         // create new identifier, push
         assignmentStatement.rhs->accept(*this);
@@ -129,9 +153,9 @@ void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
     MPLType firstType = currentType;
     assignmentStatement.rhs->accept(*this);
     if (firstType != currentType) {
-        throw InterpreterException("Invalid type: identifier must be set to value of same type");
+        throw TypecheckerException("Invalid type: identifier must be set to value of same type");
     }
-    
+
 }
 
 void Interpreter::visit(ASTIdentifier& identifier) {
@@ -139,11 +163,13 @@ void Interpreter::visit(ASTIdentifier& identifier) {
     if (table.doesSymbolExist(identifier.name)) {
         currentType = table.getSymbolType(identifier.name);
     } else {
-        throw InterpreterException("Identifier " + identifier.name + " used before defined");
+        throw TypecheckerException("Identifier " + identifier.name + " used before defined");
     }
     if (identifier.indexExpression && currentType != MPLType::ARRAY) {
-        throw InterpreterException("Identifier " + identifier.name + " given an index when not an array");
+        throw TypecheckerException("Identifier " + identifier.name + " given an index when not an array");
     }
+
+
 }
 
 void Interpreter::visit(ASTLiteral& literal) {
