@@ -17,7 +17,7 @@ void Typechecker::visit(ASTSimpleBoolExpression& simpleBoolExpr) {
 }
 
 void Typechecker::visit(ASTComplexBoolExpression& complexBoolExpr) {
-    // TODO check
+    // TODO
     currentType = MPLType::BOOL;
     complexBoolExpr.first->accept(*this);
     MPLType firstType = currentType;
@@ -79,22 +79,24 @@ void Typechecker::visit(ASTPrintStatement& printStatement) {
 }
 
 void Typechecker::visit(ASTAssignmentStatement& assignmentStatement) {
-    // TODO  // Trevor 3 12 2018 at 12:10 pm
+    
+    // TODO  FIX for Proj 7 to take actual values!!!!!!!!!!!!!!!!!!
+    
     if (!table.doesSymbolExist(assignmentStatement.identifier->name)) {
         // create new identifier, push
         assignmentStatement.rhs->accept(*this);
         switch (currentType) {
             case MPLType::INT:
-                table.storeInt(assignmentStatement.identifier->name);
+                table.storeIntVal(assignmentStatement.identifier->name, 0);
                 break;
             case MPLType::BOOL:
-                table.storeBool(assignmentStatement.identifier->name);
+                table.storeBoolVal(assignmentStatement.identifier->name, false);
                 break;
             case MPLType::STRING:
-                table.storeString(assignmentStatement.identifier->name);
+                table.storeStringVal(assignmentStatement.identifier->name, "");
                 break;
             case MPLType::ARRAY:
-                table.storeVector(assignmentStatement.identifier->name);
+                table.storeVector(assignmentStatement.identifier->name, vector<Symbol>());
                 break;
             default:
                 throw TypecheckerException("Invalid type");
