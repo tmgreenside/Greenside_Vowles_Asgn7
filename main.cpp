@@ -7,6 +7,7 @@
 #include "Parser.h"
 #include "ASTPrinter.h"
 #include "Typechecker.h"
+#include "Interpreter.h"
 
 using namespace std;
 
@@ -38,7 +39,7 @@ z = [1, 2, 3];
         Parser parser(lexer);
         ASTPrinter printer;
         parser.getAST()->accept(printer);
-        Typechecker checker;
+        Interpreter checker;
         parser.getAST()->accept(checker);
     } catch (MyPLException &e) {
         cout << "Error encountered: " << e.what() << endl;

@@ -26,46 +26,123 @@ void Interpreter::visit(ASTComplexBoolExpression& complexBoolExpr) {
     auto lhsString = currentString;
     auto lhsBool = currentBool;
     complexBoolExpr.second->accept(*this);
-    bool myResult;
+    bool myResult = false; // initialize with temp variable to suppress warnings
 
     // TODO: figure out what comparison to make, do that comparison,
     // and store the result in myResult.
+    
+    if (lhsType != currentType)
+        throw InterpreterException("Invalid types: left and right hand side types must be the same");
 
-    if(lhsType != currType){
-        myResult = false;
-
-        throw InterpreterException("Second and First Types not matching");
-
-    }
-    else{
-        myResult = true;
-    }
-
-
-    switch (currentType) {
-        case MPLType::INT:
-        case MPLType::STRING:
-        case MPLType::BOOL:
-        default:
-            break;
-    }
-
-    //need this?- from typechecker
-    /*
-    switch (complexBoolExpr.relation) {
+    switch(complexBoolExpr.relation) {
         case Token::GREATER_THAN:
+            if (currentType == MPLType::INT) {
+                if (lhsInt > currentInt) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString > currentString) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else {
+                myResult = false;
+            }
+            break;
         case Token::GREATER_THAN_EQUAL:
+            if (currentType == MPLType::INT) {
+                if (lhsInt >= currentInt) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString >= currentString) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else {
+                myResult = false;
+            }
+            break;
         case Token::LESS_THAN:
+            if (currentType == MPLType::INT) {
+                if (lhsInt < currentInt) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString < currentString) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else {
+                myResult = false;
+            }
+            break;
         case Token::LESS_THAN_EQUAL:
-            if (currentType != MPLType::INT and currentType != MPLType::STRING)
-                throw TypecheckerException("Operator valid only on integer");
+            if (currentType == MPLType::INT) {
+                if (lhsInt <= currentInt) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString <= currentString) {
+                    myResult = true;
+                } else {
+                    myResult = false;
+                }
+            } else {
+                myResult = false;
+            }
+            break;
         case Token::EQUAL:
+            if (currentType == MPLType::INT) {
+                if (lhsInt == currentInt)
+                    myResult = true;
+                else
+                    myResult = false;
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString == currentString)
+                    myResult = true;
+                else
+                    myResult = false;
+            } else if (currentType == MPLType::BOOL) {
+                if (lhsBool == currentBool)
+                    myResult = true;
+                else
+                    myResult = false;
+            }
+            break;
         case Token::NOT_EQUAL:
+            if (currentType == MPLType::INT) {
+                if (lhsInt == currentInt)
+                    myResult = false;
+                else
+                    myResult = true;
+            } else if (currentType == MPLType::STRING) {
+                if (lhsString == currentString)
+                    myResult = false;
+                else
+                    myResult = true;
+            } else if (currentType == MPLType::BOOL) {
+                if (lhsBool == currentBool)
+                    myResult = false;
+                else
+                    myResult = true;
+            }
             break;
         default:
-            throw TypecheckerException("Invalid operator");
+            myResult = false;
             break;
-    }*/
+    }
 
     if (complexBoolExpr.hasConjunction) {
         complexBoolExpr.remainder->accept(*this);
@@ -126,7 +203,6 @@ void Interpreter::visit(ASTPrintStatement& printStatement) {
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
     // TODO
 
-
     if (!table.doesSymbolExist(assignmentStatement.identifier->name)) {
         // create new identifier, push
         assignmentStatement.rhs->accept(*this);
@@ -153,7 +229,7 @@ void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
     MPLType firstType = currentType;
     assignmentStatement.rhs->accept(*this);
     if (firstType != currentType) {
-        throw TypecheckerException("Invalid type: identifier must be set to value of same type");
+        throw InterpreterException("Invalid type: identifier must be set to value of same type");
     }
 
 }
@@ -163,10 +239,10 @@ void Interpreter::visit(ASTIdentifier& identifier) {
     if (table.doesSymbolExist(identifier.name)) {
         currentType = table.getSymbolType(identifier.name);
     } else {
-        throw TypecheckerException("Identifier " + identifier.name + " used before defined");
+        throw InterpreterException("Identifier " + identifier.name + " used before defined");
     }
     if (identifier.indexExpression && currentType != MPLType::ARRAY) {
-        throw TypecheckerException("Identifier " + identifier.name + " given an index when not an array");
+        throw InterpreterException("Identifier " + identifier.name + " given an index when not an array");
     }
 
 
@@ -226,5 +302,25 @@ void Interpreter::visit(ASTReadExpression& readExpression) {
 }
 
 void Interpreter::visit(ASTComplexExpression& complexExpression) {
-    // TODO
+    // TODO  started Trevor 3-25 at 1:12 pm
+    complexExpression.firstOperand->accept(*this);
+    MPLType firstType = currentType;
+    complexExpression.rest->accept(*this); // change current type for switch
+    if (firstType != currentType) {
+        throw InterpreterException("Second and First Types must be the same");
+    }
+    switch (complexExpression.operation) {
+        case Token::MODULUS:
+        case Token::MINUS:
+        case Token::MULTIPLY:
+        case Token::DIVIDE:
+            if (firstType == MPLType::STRING) {
+                throw InterpreterException("Cannot perform math operations other than + on string");
+            }
+        case Token::PLUS:
+            break;
+        default:
+            throw InterpreterException("Expected a Math operator");
+            break;
+    }
 }
