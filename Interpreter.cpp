@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <limits>
 
 #include "Interpreter.h"
 #include "ASTNodes.h"
