@@ -179,11 +179,18 @@ void Interpreter::visit(ASTBasicIf& basicIf) {
 }
 
 void Interpreter::visit(ASTIfStatement& ifStatement) {
-    // TODO completed Trevor 3-25 at 12:49pm
+    // TODO completed Trevor 3-27 at 1:22pm
     ifStatement.baseIf.expression->accept(*this);
-    ifStatement.baseIf.statementList->accept(*this);
-    for (int i = 0; i < ifStatement.elseifs.size(); i++) {
-        ifStatement.elseifs[i].accept(*this);
+    if (currentBool) {
+        ifStatement.baseIf.statementList->accept(*this);
+    } else {
+        for (int i = 0; i < ifStatement.elseifs.size(); i++) {
+            ifStatement.elseifs[i].expression->accept(*this);
+            if (currentBool) {
+                ifStatement.elseifs[i].statementList->accept(*this);
+                return;
+            }
+        }
     }
     ifStatement.elseList->accept(*this);
 }
@@ -199,6 +206,9 @@ void Interpreter::visit(ASTWhileStatement& whileStatement) {
 void Interpreter::visit(ASTPrintStatement& printStatement) {
     // TODO
     printStatement.expression->accept(*this);
+    cout << currentString;
+    if (printStatement.isPrintln)
+        cout << endl;
 }
 
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
