@@ -316,22 +316,41 @@ void Interpreter::visit(ASTComplexExpression& complexExpression) {
     // TODO  started Trevor 3-25 at 1:12 pm
     complexExpression.firstOperand->accept(*this);
     MPLType firstType = currentType;
+    auto lhsInt = currentInt;
+    auto lhsString = currentString;
     complexExpression.rest->accept(*this); // change current type for switch
     if (firstType != currentType) {
         throw InterpreterException("Second and First Types must be the same");
     }
-    switch (complexExpression.operation) {
-        case Token::MODULUS:
-        case Token::MINUS:
-        case Token::MULTIPLY:
-        case Token::DIVIDE:
-            if (firstType == MPLType::STRING) {
-                throw InterpreterException("Cannot perform math operations other than + on string");
-            }
-        case Token::PLUS:
-            break;
-        default:
-            throw InterpreterException("Expected a Math operator");
-            break;
+    if (firstType == MPLType::INT) {
+        switch (complexExpression.operation) {
+            case Token::MODULUS:
+                currentInt = lhsInt % currentInt;
+                break;
+            case Token::MINUS:
+                currentInt = lhsInt - currentInt;
+                break;
+            case Token::MULTIPLY:
+                currentInt = lhsInt * currentInt;
+                break;
+            case Token::DIVIDE:
+                currentInt = lhsInt / currentInt;
+                break;
+            case Token::PLUS:
+                currentInt = lhsInt + currentInt;
+                break;
+            default:
+                break;
+        }
+    } else if (firstType == MPLType::STRING) {
+        switch (complexExpression.operation) {
+            case Token::PLUS:
+                lhsString += currentString;
+                break;
+            default:
+                throw InterpreterException("Invalid operator on type STRING");
+                break;
+        }
+        
     }
 }
