@@ -214,34 +214,29 @@ void Interpreter::visit(ASTPrintStatement& printStatement) {
 void Interpreter::visit(ASTAssignmentStatement& assignmentStatement) {
     // TODO
 
-    if (!table.doesSymbolExist(assignmentStatement.identifier->name)) {
-        // create new identifier, push
-        assignmentStatement.rhs->accept(*this);
-        switch (currentType) {
-            case MPLType::INT:
-                table.storeIntVal(assignmentStatement.identifier->name, currentInt);
-                break;
-            case MPLType::BOOL:
-                table.storeBoolVal(assignmentStatement.identifier->name, currentBool);
-                break;
-            case MPLType::STRING:
-                table.storeStringVal(assignmentStatement.identifier->name, currentString);
-                break;
-            case MPLType::ARRAY:
-                // !!!!!!!!!!!!!!!!!!!!!!!! How to get current vector value to pass in?
-                table.storeVector(assignmentStatement.identifier->name, vector<Symbol>());
-                break;
-            default:
-                throw InterpreterException("Invalid type");
-                break;
-        }
-    }
-    assignmentStatement.identifier->accept(*this);
-    MPLType firstType = currentType;
+    
+    // create new identifier, push
     assignmentStatement.rhs->accept(*this);
-    if (firstType != currentType) {
-        throw InterpreterException("Invalid type: identifier must be set to value of same type");
+    switch (currentType) {
+        case MPLType::INT:
+            table.storeIntVal(assignmentStatement.identifier->name, currentInt);
+            break;
+        case MPLType::BOOL:
+            table.storeBoolVal(assignmentStatement.identifier->name, currentBool);
+            break;
+        case MPLType::STRING:
+            table.storeStringVal(assignmentStatement.identifier->name, currentString);
+            break;
+        // If not going for extra credit, Dr. Schroeder says we can pretend arrays don't exist.
+//        case MPLType::ARRAY:
+//            // !!!!!!!!!!!!!!!!!!!!!!!! How to get current vector value to pass in?
+//            table.storeVector(assignmentStatement.identifier->name, vector<Symbol>());
+//            break;
+        default:
+            throw InterpreterException("Invalid type");
+            break;
     }
+    
 
 }
 
