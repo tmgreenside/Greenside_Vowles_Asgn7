@@ -183,6 +183,7 @@ void Interpreter::visit(ASTIfStatement& ifStatement) {
     ifStatement.baseIf.expression->accept(*this);
     if (currentBool) {
         ifStatement.baseIf.statementList->accept(*this);
+        return;
     } else {
         for (int i = 0; i < ifStatement.elseifs.size(); i++) {
             ifStatement.elseifs[i].expression->accept(*this);
@@ -244,6 +245,19 @@ void Interpreter::visit(ASTIdentifier& identifier) {
     // TODO
     if (table.doesSymbolExist(identifier.name)) {
         currentType = table.getSymbolType(identifier.name);
+        switch(currentType) {
+            case MPLType::INT:
+                currentInt = table.getIntVal(identifier.name);
+                break;
+            case MPLType::STRING:
+                currentString = table.getStringVal(identifier.name);
+                break;
+            case MPLType::BOOL:
+                currentBool = table.getBoolVal(identifier.name);
+                break;
+            default:
+                throw InterpreterException("Invalid type");
+        }
     } else {
         throw InterpreterException("Identifier " + identifier.name + " used before defined");
     }

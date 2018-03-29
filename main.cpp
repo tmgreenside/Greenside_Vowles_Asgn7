@@ -26,9 +26,13 @@ else
     z = false;
 end
 y = 21;
+print("y = ");
+println(y);
+println("Printed y, should be an integer");
 while x > 0 do
     print(".");
     x = x - 1;
+    println(x);
 end
 z = [1, 2, 3];
     )code";
