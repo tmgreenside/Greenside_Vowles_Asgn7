@@ -1,3 +1,8 @@
+// names: Trevor Greenside, Sammy Vowles
+// date: 29 March 2018
+// course: CPSC 326 - 01
+// asgn: 7
+
 #include <iostream>
 #include <sstream>
 #include <limits>
@@ -207,6 +212,14 @@ void Interpreter::visit(ASTWhileStatement& whileStatement) {
 void Interpreter::visit(ASTPrintStatement& printStatement) {
     // TODO
     printStatement.expression->accept(*this);
+    if (currentType == MPLType::INT)
+        currentString = to_string(currentInt);
+    else if (currentType == MPLType::BOOL) {
+        if (currentBool == false)
+            currentString = "false";
+        else
+            currentString = "true";
+    }
     cout << currentString;
     if (printStatement.isPrintln)
         cout << endl;
